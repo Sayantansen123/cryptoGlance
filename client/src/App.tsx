@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,7 +16,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Mock authentication state - would be handled by Firebase Auth in real implementation
-const isLoggedIn = true; // Change to false to test auth flow
+const isLoggedIn = false; // Change to false to test auth flow
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return isLoggedIn ? <>{children}</> : <Navigate to="/login" replace />;

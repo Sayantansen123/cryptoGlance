@@ -1,7 +1,8 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, googleProvider } from "../lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,30 +12,50 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log("Google login successful:", result.user);
+    } catch (err) {
+      console.error("Google login error:", err);
+    }
   };
 
+  const handleEmailLogin = async () => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Email login successful:", result.user);
+    } catch (err) {
+      if (err.code === "auth/user-not-found") {
+        toast({
+          title: "User don't have an account",
+          description: "Please make sure you have an acocunt.",
+          variant: "destructive"
+        });
+      } else if (err.code === "auth/wrong-password") {
+        toast({
+          title: "Wrong passsword",
+          description: "Please make sure you have corrct email and password.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Due to maintenance.",
+          variant: "destructive"
+        });
+      }
+      console.error("Email login error:", err);
+    }
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Mock login - would connect to Firebase Auth in real implementation
-    setTimeout(() => {
-      console.log('Logging in with:', formData);
-      toast({
-        title: "Login successful",
-        description: "Welcome back to CryptoGlance!"
-      });
-      navigate('/');
-      setIsLoading(false);
-    }, 1500);
+    navigate('/'); 
   };
 
   return (
@@ -55,7 +76,7 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
@@ -63,8 +84,7 @@ const Login = () => {
                   name="email"
                   type="email" 
                   placeholder="name@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -82,19 +102,18 @@ const Login = () => {
                   id="password" 
                   name="password"
                   type="password" 
-                  value={formData.password}
-                  onChange={handleChange}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
               <Button 
                 type="submit" 
-                className="w-full" 
-                disabled={isLoading}
+                className="w-full mt-2" 
+                onClick={handleEmailLogin}
               >
-                {isLoading ? "Logging in..." : "Login"}
+                Submit
               </Button>
-            </form>
+            
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
@@ -106,7 +125,7 @@ const Login = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              <Button variant="outline" type="button" disabled={isLoading}>
+              <Button variant="outline" type="button" onClick={handleGoogleLogin}>
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
