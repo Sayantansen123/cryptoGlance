@@ -5,69 +5,84 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth,db } from '@/lib/firebase';
 import { useToast } from "@/hooks/use-toast";
 
 const Register = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    acceptTerms: false
-  });
+ const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleCheckboxChange = (checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      acceptTerms: checked
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
+  const handleSignUp = async () => {
+    if (!name || !email || !password || !confirmPassword) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+  
+    if (password !== confirmPassword) {
       toast({
         title: "Passwords do not match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive"
+        description: "Make sure both passwords are the same.",
+        variant: "destructive",
       });
       return;
     }
-
-    if (formData.password.length < 8) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 8 characters long.",
-        variant: "destructive"
+  
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+  
+      // Store name in Firestore
+      await setDoc(doc(db, "users", result.user.uid), {
+        uid: result.user.uid,
+        name: name,
+        email: email,
+        createdAt: new Date(),
       });
-      return;
+  
+      toast({
+        title: "Account created",
+        description: "Welcome! Your account has been successfully created.",
+        variant: "default",
+      });
+  
+      // Optional: Redirect to dashboard or login
+    } catch (err: any) {
+      if (err.code === "auth/email-already-in-use") {
+        toast({
+          title: "Email already in use",
+          description: "Try logging in or use a different email.",
+          variant: "destructive",
+        });
+      } else if (err.code === "auth/invalid-email") {
+        toast({
+          title: "Invalid email",
+          description: "Enter a valid email address.",
+          variant: "destructive",
+        });
+      } else if (err.code === "auth/weak-password") {
+        toast({
+          title: "Weak password",
+          description: "Password should be at least 6 characters long.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sign up failed",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
-
-    setIsLoading(true);
-
-    // Mock registration - would connect to Firebase Auth in real implementation
-    setTimeout(() => {
-      console.log('Registering with:', formData);
-      toast({
-        title: "Registration successful",
-        description: "Welcome to CryptoGlance! Please log in with your new credentials."
-      });
-      navigate('/login');
-      setIsLoading(false);
-    }, 1500);
   };
 
   return (
@@ -88,15 +103,15 @@ const Register = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input 
                   id="name" 
                   name="name"
                   placeholder="John Doe"
-                  value={formData.name}
-                  onChange={handleChange}
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
               </div>
@@ -108,8 +123,7 @@ const Register = () => {
                   name="email"
                   type="email" 
                   placeholder="name@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={email} onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -120,8 +134,8 @@ const Register = () => {
                   id="password" 
                   name="password"
                   type="password" 
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
@@ -132,35 +146,21 @@ const Register = () => {
                   id="confirmPassword" 
                   name="confirmPassword"
                   type="password" 
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
               </div>
               
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="acceptTerms" 
-                  checked={formData.acceptTerms}
-                  onCheckedChange={handleCheckboxChange}
-                  required
-                />
-                <label
-                  htmlFor="acceptTerms"
-                  className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  I agree to the <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link> and <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-                </label>
-              </div>
               
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isLoading || !formData.acceptTerms}
+                onClick={handleSignUp}
               >
-                {isLoading ? "Creating account..." : "Create account"}
+                submit
               </Button>
-            </form>
+          
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
