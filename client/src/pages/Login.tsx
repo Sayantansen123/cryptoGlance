@@ -19,6 +19,11 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       console.log("Google login successful:", result.user);
+      toast({
+        title: "Account Logged in",
+        description: "Welcome! Your account has been successfully logged in.",
+        variant: "default",
+      });
     } catch (err) {
       console.error("Google login error:", err);
     }
@@ -28,6 +33,11 @@ const Login = () => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       console.log("Email login successful:", result.user);
+      toast({
+        title: "Account Logged in",
+        description: "Welcome! Your account has been successfully logged in.",
+        variant: "default",
+      });
     } catch (err) {
       if (err.code === "auth/user-not-found") {
         toast({
