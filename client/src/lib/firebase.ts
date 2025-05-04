@@ -1,7 +1,8 @@
 // src/firebase.ts
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
 import { getFirestore } from "firebase/firestore"; 
+import { useEffect, useState } from "react";
 
 
 
@@ -23,4 +24,20 @@ export const db = getFirestore(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, googleProvider };
+const useAuth = () => {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<null | any>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  return { user, loading };
+};
+
+export { auth, googleProvider,useAuth };

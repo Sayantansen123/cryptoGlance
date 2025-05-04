@@ -1,6 +1,13 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -14,11 +21,18 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
       console.log("Google login successful:", result.user);
+      // 🔐 Get the ID token
+      const token = await user.getIdToken();
+
+      // 💾 Store token in localStorage
+      localStorage.setItem("authToken", token);
+
       toast({
         title: "Account Logged in",
         description: "Welcome! Your account has been successfully logged in.",
@@ -33,6 +47,13 @@ const Login = () => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       console.log("Email login successful:", result.user);
+      const user = result.user;
+      
+      // 🔐 Get the ID token
+      const token = await user.getIdToken();
+
+      // 💾 Store token in localStorage
+      localStorage.setItem("authToken", token);
       toast({
         title: "Account Logged in",
         description: "Welcome! Your account has been successfully logged in.",
@@ -43,29 +64,29 @@ const Login = () => {
         toast({
           title: "User don't have an account",
           description: "Please make sure you have an acocunt.",
-          variant: "destructive"
+          variant: "destructive",
         });
       } else if (err.code === "auth/wrong-password") {
         toast({
           title: "Wrong passsword",
           description: "Please make sure you have corrct email and password.",
-          variant: "destructive"
+          variant: "destructive",
         });
       } else {
         toast({
           title: "Login failed",
           description: "Due to maintenance.",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
       console.error("Email login error:", err);
     }
   };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    navigate('/'); 
+    navigate("/");
   };
 
   return (
@@ -86,58 +107,62 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  name="email"
-                  type="email" 
-                  value={email}
-                  placeholder="name@example.com"
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={email}
+                placeholder="name@example.com"
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link 
-                    to="/forgot-password" 
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-                <Input 
-                  id="password" 
-                  name="password"
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full mt-2" 
-                onClick={handleEmailLogin}
-              >
-                Submit
-              </Button>
-            
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full mt-2"
+              onClick={handleEmailLogin}
+            >
+              Submit
+            </Button>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-card px-2 text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              <Button variant="outline" type="button" onClick={handleGoogleLogin}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={handleGoogleLogin}
+              >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

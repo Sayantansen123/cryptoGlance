@@ -12,18 +12,28 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import { useEffect, useState } from "react";
+import { auth,useAuth } from "./lib/firebase";
 
 const queryClient = new QueryClient();
 
 // Mock authentication state - would be handled by Firebase Auth in real implementation
 const isLoggedIn = false; // Change to false to test auth flow
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return isLoggedIn ? <>{children}</> : <Navigate to="/login" replace />;
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 const AuthRoute = ({ children }: { children: React.ReactNode }) => {
-  return isLoggedIn ? <Navigate to="/" replace /> : <>{children}</>;
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+
+  return user ? <Navigate to="/" replace /> : <>{children}</>;
 };
 
 const App = () => (
@@ -38,11 +48,11 @@ const App = () => (
           <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
 
           {/* Protected Routes - Main App Layout */}
-          <Route path="/" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-          <Route path="/portfolio" element={<ProtectedRoute><Layout><Portfolio /></Layout></ProtectedRoute>} />
-          <Route path="/market" element={<ProtectedRoute><Layout><Market /></Layout></ProtectedRoute>} />
-          <Route path="/transactions" element={<ProtectedRoute><Layout><Transactions /></Layout></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>} />
+          <Route path="/" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />
+          <Route path="/portfolio" element={<PrivateRoute><Layout><Portfolio /></Layout></PrivateRoute>} />
+          <Route path="/market" element={<PrivateRoute><Layout><Market /></Layout></PrivateRoute>} />
+          <Route path="/transactions" element={<PrivateRoute><Layout><Transactions /></Layout></PrivateRoute>} />
+          <Route path="/settings" element={<PrivateRoute><Layout><Settings /></Layout></PrivateRoute>} />
 
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

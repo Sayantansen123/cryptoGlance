@@ -1,13 +1,16 @@
-
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase'; 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Bell, Search, Menu } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { toast } = useToast(); 
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,15 +20,35 @@ const Navbar = () => {
     }
   };
 
-  // This would be connected to Firebase in a real implementation
-  const handleLogout = () => {
-    console.log('User logged out');
-    // Firebase logout logic would go here
-  };
+
 
   const handleMenu = () => {
     // Toggle sidebar for mobile
     console.log('Toggle sidebar');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+        variant: "default",
+      });
+  
+      // Optionally clear token or localStorage if you're storing anything
+      localStorage.removeItem("token");
+  
+      // Reload or redirect
+      window.location.href = "/login";
+    } catch (error) {
+      toast({
+        title: "Logout failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Logout error:", error);
+    }
   };
 
   return (
