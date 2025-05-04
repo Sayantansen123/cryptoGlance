@@ -24,6 +24,13 @@ const Register = () => {
      try {
        const result = await signInWithPopup(auth, googleProvider);
        console.log("Google login successful:", result.user);
+       const user = result.user;
+       localStorage.setItem('user', JSON.stringify({
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid,
+      }));
        toast({
         title: "Account Logged in",
         description: "Welcome! Your account has been successfully logged in.",

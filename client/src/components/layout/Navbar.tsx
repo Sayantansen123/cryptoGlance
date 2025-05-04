@@ -37,7 +37,8 @@ const Navbar = () => {
       });
   
       // Optionally clear token or localStorage if you're storing anything
-      localStorage.removeItem("token");
+      
+      localStorage.removeItem('user');
   
       // Reload or redirect
       window.location.href = "/login";

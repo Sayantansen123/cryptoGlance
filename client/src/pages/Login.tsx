@@ -26,12 +26,14 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      console.log("Google login successful:", result.user);
-      // 🔐 Get the ID token
-      const token = await user.getIdToken();
+      console.log("Google login successful:", result.user)
 
-      // 💾 Store token in localStorage
-      localStorage.setItem("authToken", token);
+      localStorage.setItem('user', JSON.stringify({
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid,
+      }));
 
       toast({
         title: "Account Logged in",

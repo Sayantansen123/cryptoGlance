@@ -5,7 +5,6 @@ import { getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 
-
 // Replace with your Firebase project config
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
