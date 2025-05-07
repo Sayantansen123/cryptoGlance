@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
-import { auth, googleProvider } from "../lib/firebase";
+import { auth, googleProvider,getUserData } from "../lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,12 +50,15 @@ const Login = () => {
       const result = await signInWithEmailAndPassword(auth, email, password);
       console.log("Email login successful:", result.user);
       const user = result.user;
+      const data = await getUserData(user.uid);
       
-      // 🔐 Get the ID token
-      const token = await user.getIdToken();
-
-      // 💾 Store token in localStorage
-      localStorage.setItem("authToken", token);
+      localStorage.setItem('user', JSON.stringify({
+        displayName: data.name,
+        email: data.email,
+        photoURL: user.photoURL,
+      }));
+      console.log(user)
+       
       toast({
         title: "Account Logged in",
         description: "Welcome! Your account has been successfully logged in.",

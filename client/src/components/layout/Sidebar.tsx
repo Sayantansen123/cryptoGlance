@@ -21,18 +21,20 @@ const Sidebar = () => {
 
   useEffect(() => {
     // Get user from localStorage when the component mounts
-    const getUser = () => {
+    const timer = setTimeout(() => {
       const storedUser = localStorage.getItem("user");
-
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
-    };
-    getUser();
+    }, 2000); // 100ms delay — tweak as needed
+  
+    return () => clearTimeout(timer); 
   }, []);
 
+  
+
   return (
-    <aside className="hidden md:flex flex-col bg-white border-r border-border w-64 p-4">
+    <aside className="hidden md:flex fixed top-0 left-0 h-screen flex-col bg-white border-r border-border w-64 p-4 z-50">
       <div className="flex items-center gap-2 mb-10 pl-2">
         <div className="h-8 w-8 rounded-full crypto-gradient"></div>
         <h1 className="text-xl font-bold">CryptoGlance</h1>

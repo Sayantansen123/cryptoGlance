@@ -71,6 +71,12 @@ const Register = () => {
         email: email,
         createdAt: new Date(),
       });
+
+      localStorage.setItem('user', JSON.stringify({
+        displayName: name,
+        email: email,
+        photoURL: "https://i.sstatic.net/l60Hf.png",
+      }));
   
       toast({
         title: "Account created",

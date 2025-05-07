@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
 import { getFirestore } from "firebase/firestore"; 
 import { useEffect, useState } from "react";
+import { doc,getDoc } from "firebase/firestore";
 
 
 // Replace with your Firebase project config
@@ -39,4 +40,18 @@ const useAuth = () => {
   return { user, loading };
 };
 
-export { auth, googleProvider,useAuth };
+async function getUserData(uid) {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+
+  if (userSnap.exists()) {
+    const userData = userSnap.data();
+    console.log("User data:", userData);
+    return userData;
+  } else {
+    console.log("No such user!");
+    return null;
+  }
+}
+
+export { auth, googleProvider,useAuth,getUserData };
